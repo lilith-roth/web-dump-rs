@@ -2,7 +2,7 @@
 name = "web-dump-rs"
 description = "Application to retrieve all files from a web server based on a provided wordlist."
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 readme = "README.md"
 repository = "https://github.com/lilith-roth/web-dump-rs/"
 license = "MIT"
