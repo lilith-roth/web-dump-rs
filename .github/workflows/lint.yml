@@ -23,4 +23,4 @@ jobs:
       - name: Run lint check
         run: cargo clippy --verbose
       - name: Run formatting check
-        run: cargo format --verbose
+        run: cargo fmt --verbose --check
