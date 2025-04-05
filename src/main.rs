@@ -41,8 +41,8 @@ fn main() {
             // If the retrieved content is just a directory listing page ignore
             // ToDo: Add switch for storing these as well, will need some work with the directories though,
             //       as otherwise we will have the same filename & directory name which won't work.
-            if let Ok(res) = std::str::from_utf8(&content) {
-                if res.contains("Directory listing") {
+            if let Ok(web_content_text) = std::str::from_utf8(&content) {
+                if is_remote_directory(web_content_text) {
                     continue;
                 }
             }
@@ -53,6 +53,20 @@ fn main() {
         }
     }
     log::info!("Done! Thanks for using <3");
+}
+
+fn is_remote_directory(web_content: &str) -> bool {
+    let mut result = false;
+    // Python3's http.server
+    if web_content.contains("Directory listing") {
+        result = true;
+    }
+    // Apache & nginx
+    if web_content.contains("Index of") {
+        result = true;
+    }
+    // ToDo: Find a better way for detecting directories
+    result
 }
 
 fn retrieve_content_from_web_server(
