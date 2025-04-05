@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.5](https://github.com/lilith-roth/web-dump-rs/compare/v0.1.4...v0.1.5) - 2025-04-05
+
+### Added
+
+- apache & nginx directory detection ([#12](https://github.com/lilith-roth/web-dump-rs/pull/12))
+
 ## [0.1.4](https://github.com/lilith-roth/web-dump-rs/compare/v0.1.3...v0.1.4) - 2025-04-05
 
 ### Other
