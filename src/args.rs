@@ -1,11 +1,10 @@
 use clap::Parser;
-use clap_verbosity_flag::InfoLevel;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 pub struct Args {
     #[command(flatten)]
-    verbose: clap_verbosity_flag::Verbosity<InfoLevel>,
+    verbose: clap_verbosity_flag::Verbosity<clap_verbosity_flag::InfoLevel>,
 
     #[arg(
         short = 'w',
@@ -20,6 +19,9 @@ pub struct Args {
 
     #[arg(short = 'o', long, default_value = "./out/")]
     pub(crate) output_directory: String,
+
+    #[arg(short = 's', long, action = clap::ArgAction::SetFalse, help = "appends '/' to each request")]
+    pub(crate) append_slash: bool,
 }
 
 pub(crate) fn setup_logging() -> Args {
