@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.3](https://github.com/lilith-roth/web-dump-rs/compare/v0.1.2...v0.1.3) - 2025-04-05
+
+### Other
+
+- only run dependency step if building on linux ([#9](https://github.com/lilith-roth/web-dump-rs/pull/9))
+
 ## [0.1.2](https://github.com/lilith-roth/web-dump-rs/compare/v0.1.1...v0.1.2) - 2025-04-05
 
 ### Added
