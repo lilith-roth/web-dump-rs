@@ -25,7 +25,10 @@ fn main() {
     let client = reqwest::blocking::Client::new();
     for line in wordlist.lines() {
         for word in line.unwrap().split_whitespace() {
-            let download_url: String = format!("{target_url}{word}");
+            let mut download_url: String = format!("{target_url}{word}");
+            if args.append_slash {
+                download_url = format!("{download_url}/")
+            }
             log::debug!("Checking {}", download_url);
 
             // Retrieve content from web server
