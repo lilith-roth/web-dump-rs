@@ -59,7 +59,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y openssl libssl-dev pkg-config
-        if: startsWith(matrix.os, 'ubuntu') && !contains(matrix.target, '-musl')
+        if: startsWith(matrix.os, 'ubuntu')
       - uses: taiki-e/install-action@v2
         with:
           tool: cross
