@@ -55,6 +55,10 @@ jobs:
         with:
           target: ${{ matrix.target }}
         if: startsWith(matrix.os, 'ubuntu') && !contains(matrix.target, '-musl')
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y openssl libssl-dev pkg-config
       - uses: taiki-e/install-action@v2
         with:
           tool: cross
