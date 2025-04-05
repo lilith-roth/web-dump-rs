@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.4](https://github.com/lilith-roth/web-dump-rs/compare/v0.1.3...v0.1.4) - 2025-04-05
+
+### Other
+
+- deps broken on `x86_64-unknown-linux-musl` build
+
 ## [0.1.3](https://github.com/lilith-roth/web-dump-rs/compare/v0.1.2...v0.1.3) - 2025-04-05
 
 ### Other
