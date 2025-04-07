@@ -74,15 +74,15 @@ fn retrieve_content_from_web_server(
     client: &reqwest::blocking::Client,
 ) -> Option<bytes::Bytes> {
     let request = client.get(download_url);
-    let response = request.send().expect("err");
+    let response = match request.send() {
+        Ok(res) => res,
+        Err(_) => return None,
+    };
     let response_status_code = response.status();
     if response_status_code != 200 {
         return None;
     }
-    match response.bytes() {
-        Ok(res) => Some(res),
-        Err(_) => None,
-    }
+    response.bytes().ok()
 }
 
 fn save_content_to_disk(content: bytes::Bytes, file_path: String) {
