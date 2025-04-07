@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.6](https://github.com/lilith-roth/web-dump-rs/compare/v0.1.5...v0.1.6) - 2025-04-07
+
+### Fixed
+
+- connection errors caused application to crash ([#18](https://github.com/lilith-roth/web-dump-rs/pull/18))
+
 ## [0.1.5](https://github.com/lilith-roth/web-dump-rs/compare/v0.1.4...v0.1.5) - 2025-04-05
 
 ### Added
