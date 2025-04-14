@@ -1,17 +1,17 @@
 mod args;
-mod utils;
-mod wordlist;
-mod web;
 mod storage;
+mod utils;
+mod web;
+mod wordlist;
 
 use crate::args::{Args, setup_logging};
-use crate::utils::{get_output_dir, get_wordlist, prepare_output_dir};
-use crate::web::{retrieve_content_from_web_server, is_remote_directory};
 use crate::storage::save_content_to_disk;
+use crate::utils::{get_output_dir, get_wordlist, prepare_output_dir};
+use crate::web::{is_remote_directory, retrieve_content_from_web_server};
 use crate::wordlist::load_wordlist;
 use std::sync::{Arc, Mutex};
+use std::thread;
 use std::thread::JoinHandle;
-use std::{thread};
 
 fn main() {
     let args: Args = setup_logging();
@@ -43,7 +43,7 @@ fn main() {
                 .lock()
                 .expect("Could not load wordlist into thread!")
                 .clone();
-            
+
             // Doing the magic
             move || {
                 let client = reqwest::blocking::Client::new();
@@ -85,6 +85,3 @@ fn main() {
     }
     log::info!("Done! Thanks for using <3");
 }
-
-
-

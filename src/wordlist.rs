@@ -2,7 +2,10 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::sync::{Arc, Mutex};
 
-pub(crate) fn load_wordlist(wordlist: BufReader<File>, amount_threads: usize) -> Arc<Mutex<Vec<Vec<String>>>> {
+pub(crate) fn load_wordlist(
+    wordlist: BufReader<File>,
+    amount_threads: usize,
+) -> Arc<Mutex<Vec<Vec<String>>>> {
     let wordlists: Arc<Mutex<Vec<Vec<String>>>> =
         Arc::new(Mutex::new(vec![vec![]; amount_threads]));
     log::info!("Loading wordlist...");
