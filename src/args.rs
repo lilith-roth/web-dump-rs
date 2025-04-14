@@ -22,6 +22,9 @@ pub struct Args {
 
     #[arg(short = 's', long, action = clap::ArgAction::SetTrue, help = "appends '/' to each request")]
     pub(crate) append_slash: bool,
+
+    #[arg(short = 't', long, default_value = "1")]
+    pub(crate) threads: u8,
 }
 
 pub(crate) fn setup_logging() -> Args {
