@@ -1,7 +1,7 @@
 [package]
 name = "web-dump-rs"
 description = "Application to retrieve all files from a web server based on a provided wordlist."
-version = "0.1.8"
+version = "0.2.0"
 edition = "2024"
 readme = "README.md"
 repository = "https://github.com/lilith-roth/web-dump-rs/"

@@ -1,56 +1,94 @@
 mod args;
 mod utils;
 
-use crate::args::setup_logging;
+use crate::args::{Args, setup_logging};
 use crate::utils::{get_output_dir, get_wordlist, prepare_output_dir};
 use std::io::Write;
 use std::path::Path;
-use std::{fs::File, io::BufRead};
+use std::sync::{Arc, Mutex};
+use std::thread::JoinHandle;
+use std::{fs::File, io::BufRead, thread};
 
 fn main() {
-    let args = setup_logging();
+    let args: Args = setup_logging();
     log::info!("Welcome to web-dump-rs!\n\n");
 
     // Load wordlist
     log::info!("Wordlist in use: {}", args.wordlist_path);
     let wordlist = get_wordlist(args.wordlist_path);
 
-    let target_url: &str = args.target_url.as_str();
+    let target_url: Arc<String> = Arc::new(args.target_url);
     log::info!("Target URL: {}", target_url);
 
     let out_dir = get_output_dir(args.output_directory);
     log::info!("Output directory: {:?}", out_dir);
-    let out_dir_str = prepare_output_dir(out_dir);
+    let out_dir_str = Arc::new(prepare_output_dir(out_dir));
 
-    let client = reqwest::blocking::Client::new();
+    let wordlists: Arc<Mutex<Vec<Vec<String>>>> =
+        Arc::new(Mutex::new(vec![vec![]; usize::from(args.threads)]));
+
+    // Load wordlist
+    log::info!("Loading wordlist...");
+    let mut i = 0;
     for line in wordlist.lines() {
-        for word in line.unwrap().split_whitespace() {
-            let mut download_url: String = format!("{target_url}{word}");
-            if args.append_slash {
-                download_url = format!("{download_url}/")
-            }
-            log::debug!("Checking {}", download_url);
+        let wl = wordlists.clone();
+        let buffer = &mut wl.lock().expect("Could not access wordlist!")[i];
+        buffer.push(line.expect("Could not read line from wordlist!"));
+        i += 1;
+        if i == args.threads as usize {
+            i = 0;
+        }
+    }
+    log::info!("Wordlist loaded");
+    log::info!("{}", args.append_slash);
 
-            // Retrieve content from web server
-            let content_raw = retrieve_content_from_web_server(&download_url, &client);
-            let content = match content_raw {
-                None => continue,
-                Some(res) => res,
-            };
+    let mut threads: Vec<JoinHandle<()>> = vec![];
+    for i in 0..args.threads {
+        threads.push(thread::spawn({
+            log::info!("Thread {} spawned", i);
+            let url = target_url.clone();
+            let directory = out_dir_str.clone();
+            let wl = wordlists
+                .lock()
+                .expect("Could not load wordlist into thread!")
+                .clone();
+            move || {
+                let client = reqwest::blocking::Client::new();
+                for word in wl[i as usize].clone() {
+                    let mut download_url: String = format!("{url}{word}");
+                    if args.append_slash {
+                        download_url = format!("{download_url}/")
+                    }
+                    log::debug!("Thread {} checking {}", i, download_url);
 
-            // If the retrieved content is just a directory listing page ignore
-            // ToDo: Add switch for storing these as well, will need some work with the directories though,
-            //       as otherwise we will have the same filename & directory name which won't work.
-            if let Ok(web_content_text) = std::str::from_utf8(&content) {
-                if is_remote_directory(web_content_text) {
-                    continue;
+                    // Retrieve content from web server
+                    let content_raw = retrieve_content_from_web_server(&download_url, &client);
+                    let content = match content_raw {
+                        None => continue,
+                        Some(res) => res,
+                    };
+
+                    // If the retrieved content is just a directory listing page ignore
+                    // ToDo: Add switch for storing these as well, will need some work with the directories though,
+                    //       as otherwise we will have the same filename & directory name which won't work.
+                    if let Ok(web_content_text) = std::str::from_utf8(&content) {
+                        if is_remote_directory(web_content_text) {
+                            continue;
+                        }
+                    }
+                    log::info!("Thread {} found: {}", i, download_url);
+
+                    // Save content to disk
+                    let file_path: String = format!("{directory}{word}");
+                    save_content_to_disk(content, file_path)
                 }
             }
-
-            // Save content to disk
-            let file_path: String = format!("{out_dir_str}{word}");
-            save_content_to_disk(content, file_path)
-        }
+        }));
+    }
+    for active_thread in threads {
+        active_thread
+            .join()
+            .expect("Could not wait for threads to finish!");
     }
     log::info!("Done! Thanks for using <3");
 }
@@ -89,10 +127,16 @@ fn save_content_to_disk(content: bytes::Bytes, file_path: String) {
     log::debug!("Trying to save new file: {:?}", &file_path);
 
     // Making sure the directory exists
-    if !Path::new(&file_path).parent().unwrap().exists() {
+    if !Path::new(&file_path)
+        .parent()
+        .expect("Could not access parent directory!")
+        .exists()
+    {
         log::debug!(
             "Creating new directory: {:?}",
-            Path::new(&file_path).parent().unwrap()
+            Path::new(&file_path)
+                .parent()
+                .expect("Could not create directory to save content!")
         );
         let path = match Path::new(&file_path).parent() {
             Some(res) => res,
