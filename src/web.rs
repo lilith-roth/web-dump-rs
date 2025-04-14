@@ -1,3 +1,5 @@
+use lol_html::{element, HtmlRewriter, Settings};
+
 pub(crate) fn is_remote_directory(web_content: &str) -> bool {
     let mut result = false;
     // Python3's http.server
@@ -26,4 +28,24 @@ pub(crate) fn retrieve_content_from_web_server(
         return None;
     }
     response.bytes().ok()
+}
+
+pub(crate) fn parse_html_and_search_links(web_content_text: &str) -> Vec<String> {
+    let mut links: Vec<String> = vec![];
+    let mut parser = HtmlRewriter::new(
+        Settings {
+            element_content_handlers: vec![
+                element!("a[href]", |el| {
+                    let href = el.get_attribute("href").expect("No href attribute!");
+                    links.push(href);
+                    Ok(())
+                })
+            ],
+            ..Settings::new()
+        },
+        |_: &[u8]| ()
+    );
+    parser.write(web_content_text.as_ref()).expect("Could not parse HTML!");
+    parser.end().expect("Could not finalize HTML parser!");
+    links
 }

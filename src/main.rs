@@ -7,11 +7,12 @@ mod wordlist;
 use crate::args::{Args, setup_logging};
 use crate::storage::save_content_to_disk;
 use crate::utils::{get_output_dir, get_wordlist, prepare_output_dir};
-use crate::web::{is_remote_directory, retrieve_content_from_web_server};
+use crate::web::{is_remote_directory, parse_html_and_search_links, retrieve_content_from_web_server};
 use crate::wordlist::load_wordlist;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
+use lol_html::{element, HtmlRewriter, Settings};
 
 fn main() {
     let args: Args = setup_logging();
@@ -39,7 +40,7 @@ fn main() {
             // Cloning variables into threads
             let url = target_url.clone();
             let directory = out_dir_str.clone();
-            let wl = wordlists
+            let mut wl = wordlists
                 .lock()
                 .expect("Could not load wordlist into thread!")
                 .clone();
@@ -65,8 +66,16 @@ fn main() {
                     // ToDo: Add switch for storing these as well, will need some work with the directories though,
                     //       as otherwise we will have the same filename & directory name which won't work.
                     if let Ok(web_content_text) = std::str::from_utf8(&content) {
+                        // If remote page is a directory listing, continue with next item in wordlist
                         if is_remote_directory(web_content_text) {
                             continue;
+                        }
+                        
+                        // Try to parse HTML, and search all referenced URLs
+                        let found_links: Vec<String> = parse_html_and_search_links(web_content_text);
+                        log::debug!("HTML Parser found links: {:?}", found_links);
+                        for link in found_links {
+                            wl[i as usize].push(link);   
                         }
                     }
                     log::info!("Thread {} found: {}", i, download_url);
@@ -85,3 +94,4 @@ fn main() {
     }
     log::info!("Done! Thanks for using <3");
 }
+
