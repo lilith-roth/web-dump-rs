@@ -20,7 +20,7 @@ pub struct Args {
     #[arg(short = 'o', long, default_value = "./out/")]
     pub(crate) output_directory: String,
 
-    #[arg(short = 's', long, action = clap::ArgAction::SetFalse, help = "appends '/' to each request")]
+    #[arg(short = 's', long, action = clap::ArgAction::SetTrue, help = "appends '/' to each request")]
     pub(crate) append_slash: bool,
 }
 
