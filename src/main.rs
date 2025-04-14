@@ -86,7 +86,9 @@ fn main() {
         }));
     }
     for active_thread in threads {
-        active_thread.join().expect("Could not wait for threads to finish!");
+        active_thread
+            .join()
+            .expect("Could not wait for threads to finish!");
     }
     log::info!("Done! Thanks for using <3");
 }
