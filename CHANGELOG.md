@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.1](https://github.com/lilith-roth/web-dump-rs/compare/v0.2.0...v0.2.1) - 2025-04-14
+
+### Other
+
+- readme update ([#25](https://github.com/lilith-roth/web-dump-rs/pull/25))
+
 ## [0.1.8](https://github.com/lilith-roth/web-dump-rs/compare/v0.1.7...v0.1.8) - 2025-04-14
 
 ### Fixed
