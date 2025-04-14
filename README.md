@@ -22,6 +22,8 @@ Options:
   -w, --wordlist-path <WORDLIST_PATH>        </usr/share/wordlists/wordlist.txt>
   -u, --target-url <TARGET_URL>              <http://127.0.0.1/>
   -o, --output-directory <OUTPUT_DIRECTORY>  [default: ./out/]
+  -s, --append-slash                         appends '/' to each request
+  -t, --threads <THREADS>                    [default: 1]
   -h, --help                                 Print help
   -V, --version                              Print version
 ```
