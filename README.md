@@ -13,6 +13,7 @@ Simple tool to retrieve all files from a web server based on a provided wordlist
 `web-dump-rs --wordlist-path /usr/share/wordlists/wordlist.txt --target-url http://127.0.0.1`
 
 ### Usage
+# ToDo: Update when switch for crawl mode has been added
 ```
 Usage: web-dump-rs [OPTIONS] --wordlist-path <WORDLIST_PATH> --target-url <TARGET_URL>
 

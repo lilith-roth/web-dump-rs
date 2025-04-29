@@ -35,6 +35,7 @@ fn main() {
     let out_dir_str: Arc<String> = Arc::new(prepare_output_dir(out_dir));
 
     // Load wordlist
+    // ToDo: Add switch to enable crawl only mode with no wordlist
     let wordlists: Arc<Mutex<Vec<Vec<String>>>> = load_wordlist(wordlist, args.threads as usize);
 
     crawl_and_download(args.threads, target_url.clone(), out_dir_str.clone(), wordlists.clone(), args.append_slash);
@@ -59,6 +60,7 @@ fn crawl_and_download(num_threads: u8, target_url: Arc<String>, out_dir_str: Arc
             // Doing the magic
             move || {
                 let client: Client = Client::new();
+                // ToDo: Add switch to enable/disable crawling functionality
                 let mut newly_found_links: Vec<String> = download_links_from_list(wl.clone(), i, url.clone(), append_slash, directory.clone(), client.clone());
                 while !newly_found_links.is_empty() {
                     newly_found_links = download_links_from_list(wl.clone(), i, url.clone(), append_slash, directory.clone(), client.clone());
