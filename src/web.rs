@@ -1,7 +1,8 @@
 use lol_html::{element, HtmlRewriter, Settings};
+use reqwest::blocking::{RequestBuilder, Response};
 
 pub(crate) fn is_remote_directory(web_content: &str) -> bool {
-    let mut result = false;
+    let mut result: bool = false;
     // Python3's http.server
     if web_content.contains("Directory listing") {
         result = true;
@@ -18,8 +19,8 @@ pub(crate) fn retrieve_content_from_web_server(
     download_url: &str,
     client: &reqwest::blocking::Client,
 ) -> Option<bytes::Bytes> {
-    let request = client.get(download_url);
-    let response = match request.send() {
+    let request: RequestBuilder = client.get(download_url);
+    let response: Response = match request.send() {
         Ok(res) => res,
         Err(_) => return None,
     };
@@ -32,7 +33,7 @@ pub(crate) fn retrieve_content_from_web_server(
 
 pub(crate) fn parse_html_and_search_links(web_content_text: &str) -> Vec<String> {
     let mut links: Vec<String> = vec![];
-    let mut parser = HtmlRewriter::new(
+    let mut parser: HtmlRewriter<fn(&[u8])> = HtmlRewriter::new(
         Settings {
             element_content_handlers: vec![
                 element!("a[href]", |el| {

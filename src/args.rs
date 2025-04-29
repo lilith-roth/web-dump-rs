@@ -28,7 +28,7 @@ pub(crate) struct Args {
 }
 
 pub(crate) fn setup_logging() -> Args {
-    let args = Args::parse();
+    let args: Args = Args::parse();
     env_logger::Builder::new()
         .filter_level(args.verbose.log_level_filter())
         .init();

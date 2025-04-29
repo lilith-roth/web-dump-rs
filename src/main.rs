@@ -4,6 +4,9 @@ mod utils;
 mod web;
 mod wordlist;
 
+use std::fs::File;
+use std::io::BufReader;
+use std::path::PathBuf;
 use crate::args::{Args, setup_logging};
 use crate::storage::{save_content_to_disk};
 use crate::utils::{get_output_dir, get_wordlist, prepare_output_dir};
@@ -12,6 +15,7 @@ use crate::wordlist::load_wordlist;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
+use bytes::Bytes;
 use reqwest::blocking::Client;
 use url::Url;
 
@@ -21,14 +25,14 @@ fn main() {
 
     // Load wordlist
     log::info!("Wordlist in use: {}", args.wordlist_path);
-    let wordlist = get_wordlist(args.wordlist_path);
+    let wordlist: BufReader<File> = get_wordlist(args.wordlist_path);
 
     let target_url: Arc<String> = Arc::new(args.target_url);
     log::info!("Target URL: {}", target_url);
 
-    let out_dir = get_output_dir(args.output_directory);
+    let out_dir: PathBuf = get_output_dir(args.output_directory);
     log::info!("Output directory: {:?}", out_dir);
-    let out_dir_str = Arc::new(prepare_output_dir(out_dir));
+    let out_dir_str: Arc<String> = Arc::new(prepare_output_dir(out_dir));
 
     // Load wordlist
     let wordlists: Arc<Mutex<Vec<Vec<String>>>> = load_wordlist(wordlist, args.threads as usize);
@@ -45,9 +49,9 @@ fn crawl_and_download(num_threads: u8, target_url: Arc<String>, out_dir_str: Arc
         threads.push(thread::spawn({
             log::debug!("Thread {} spawned", i);
             // Cloning variables into threads
-            let url = target_url.clone();
-            let directory = out_dir_str.clone();
-            let wl = wordlists
+            let url: Arc<String> = target_url.clone();
+            let directory: Arc<String> = out_dir_str.clone();
+            let wl: Vec<Vec<String>> = wordlists
                 .lock()
                 .expect("Could not load wordlist into thread!")
                 .clone();
@@ -55,7 +59,7 @@ fn crawl_and_download(num_threads: u8, target_url: Arc<String>, out_dir_str: Arc
             // Doing the magic
             move || {
                 let client: Client = Client::new();
-                let mut newly_found_links = download_links_from_list(wl.clone(), i, url.clone(), append_slash, directory.clone(), client.clone());
+                let mut newly_found_links: Vec<String> = download_links_from_list(wl.clone(), i, url.clone(), append_slash, directory.clone(), client.clone());
                 while !newly_found_links.is_empty() {
                     newly_found_links = download_links_from_list(wl.clone(), i, url.clone(), append_slash, directory.clone(), client.clone());
                 }
@@ -80,8 +84,8 @@ fn download_links_from_list(wl: Vec<Vec<String>>, thread_id: u8, url: Arc<String
         log::debug!("Thread {} checking {}", thread_id, download_url);
 
         // Retrieve content from web server
-        let content_raw = retrieve_content_from_web_server(&download_url, &client);
-        let content = match content_raw {
+        let content_raw: Option<Bytes> = retrieve_content_from_web_server(&download_url, &client);
+        let content: Bytes = match content_raw {
             None => continue,
             Some(res) => res,
         };
@@ -110,8 +114,8 @@ fn download_links_from_list(wl: Vec<Vec<String>>, thread_id: u8, url: Arc<String
         log::info!("Thread {} found: {}", thread_id, download_url);
 
         // Save content to disk
-        let url_parse = Url::parse(&download_url).expect("Could not parse URL");
-        let dir_path = url_parse.path();
+        let url_parse: Url = Url::parse(&download_url).expect("Could not parse URL");
+        let dir_path: &str = url_parse.path();
         let file_path: String = format!("{directory}{dir_path}");
         save_content_to_disk(content, file_path);
     }

@@ -17,7 +17,7 @@ pub(crate) fn save_content_to_disk(content: bytes::Bytes, file_path: String) {
                 .parent()
                 .expect("Could not create directory to save content!")
         );
-        let path = match Path::new(&file_path).parent() {
+        let path: &Path = match Path::new(&file_path).parent() {
             Some(res) => res,
             None => {
                 log::error!(
