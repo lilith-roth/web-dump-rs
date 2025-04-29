@@ -5,7 +5,7 @@ mod web;
 mod wordlist;
 
 use crate::args::{Args, setup_logging};
-use crate::storage::save_content_to_disk;
+use crate::storage::{create_directories, save_content_to_disk};
 use crate::utils::{get_output_dir, get_wordlist, prepare_output_dir};
 use crate::web::{is_remote_directory, parse_html_and_search_links, retrieve_content_from_web_server};
 use crate::wordlist::load_wordlist;
@@ -13,6 +13,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
 use lol_html::{element, HtmlRewriter, Settings};
+use url::Url;
 
 fn main() {
     let args: Args = setup_logging();
@@ -32,8 +33,20 @@ fn main() {
     // Load wordlist
     let wordlists: Arc<Mutex<Vec<Vec<String>>>> = load_wordlist(wordlist, args.threads as usize);
 
+    let mut retrieved_urls: Vec<String>;
+    loop {
+        retrieved_urls = crawl_and_download(args.threads, target_url.clone(), out_dir_str.clone(), wordlists.clone(), args.append_slash);
+        if retrieved_urls.is_empty() {
+            break;
+        }
+    }
+
+    log::info!("Done! Thanks for using <3");
+}
+
+fn crawl_and_download(num_threads: u8, target_url: Arc<String>, out_dir_str: Arc<String>, wordlists: Arc<Mutex<Vec<Vec<String>>>>, append_slash: bool) -> Vec<String> {
     let mut threads: Vec<JoinHandle<()>> = vec![];
-    for i in 0..args.threads {
+    let mut found_new_urls: Vec<String> = for i in 0..num_threads {
         // Creating threads
         threads.push(thread::spawn({
             log::debug!("Thread {} spawned", i);
@@ -47,10 +60,11 @@ fn main() {
 
             // Doing the magic
             move || {
+                let mut found_new_urls_buffer: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(vec![]));
                 let client = reqwest::blocking::Client::new();
                 for word in wl[i as usize].clone() {
                     let mut download_url: String = format!("{url}{word}");
-                    if args.append_slash {
+                    if append_slash {
                         download_url = format!("{download_url}/")
                     }
                     log::debug!("Thread {} checking {}", i, download_url);
@@ -62,36 +76,44 @@ fn main() {
                         Some(res) => res,
                     };
 
+                    // Create directories for web path
+                    // create_directories(Url::parse(&download_url).unwrap().path());
+
                     // If the retrieved content is just a directory listing page ignore
                     // ToDo: Add switch for storing these as well, will need some work with the directories though,
                     //       as otherwise we will have the same filename & directory name which won't work.
                     if let Ok(web_content_text) = std::str::from_utf8(&content) {
+
+                        // Try to parse HTML, and search all referenced URLs
+                        let found_links: Vec<String> = parse_html_and_search_links(web_content_text);
+                        log::info!("HTML Parser found links: {:?}", found_links);
+                        for link in found_links {
+                            found_new_urls_buffer.lock().unwrap().push(link);
+                        }
+
+
                         // If remote page is a directory listing, continue with next item in wordlist
                         if is_remote_directory(web_content_text) {
                             continue;
-                        }
-                        
-                        // Try to parse HTML, and search all referenced URLs
-                        let found_links: Vec<String> = parse_html_and_search_links(web_content_text);
-                        log::debug!("HTML Parser found links: {:?}", found_links);
-                        for link in found_links {
-                            wl[i as usize].push(link);   
                         }
                     }
                     log::info!("Thread {} found: {}", i, download_url);
 
                     // Save content to disk
-                    let file_path: String = format!("{directory}{word}");
-                    save_content_to_disk(content, file_path)
+                    let url_parse = Url::parse(&download_url).expect("Could not parse URL");
+                    let dir_path = url_parse.path();
+                    let file_path: String = format!("{directory}{dir_path}");
+                    save_content_to_disk(content, file_path);
+                    found_new_urls_buffer.lock().expect("AA").clone()
                 }
             }
         }));
-    }
+    };
+
     for active_thread in threads {
         active_thread
             .join()
             .expect("Could not wait for threads to finish!");
     }
-    log::info!("Done! Thanks for using <3");
+    found_new_urls.lock().expect("").clone()
 }
-

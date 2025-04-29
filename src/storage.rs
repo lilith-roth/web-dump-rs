@@ -54,3 +54,8 @@ pub(crate) fn save_content_to_disk(content: bytes::Bytes, file_path: String) {
         Err(err) => log::error!("Unable to save: {}\n{:?}", file_path, err),
     }
 }
+
+pub(crate) fn create_directories(path: &str) {
+    // std::fs::create_dir_all().unwrap()
+    
+}
