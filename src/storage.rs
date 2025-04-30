@@ -8,9 +8,9 @@ pub(crate) fn save_content_to_disk(content: bytes::Bytes, mut file_path: String)
     log::debug!("Trying to save new file: {:?}", &file_path);
     if PathBuf::from(&file_path).exists() {
         log::warn!("File {} already exists!", style(file_path).red());
-        return
+        return;
     }
-    
+
     // Making sure the directory exists
     if !Path::new(&file_path).exists() {
         log::debug!(
@@ -44,7 +44,7 @@ pub(crate) fn save_content_to_disk(content: bytes::Bytes, mut file_path: String)
     if file_path.ends_with("/") {
         file_path += "index.html";
     }
-    
+
     // Creating a new file on disk
     let mut downloaded_file: File = match File::create(&file_path) {
         Ok(res) => res,
