@@ -25,6 +25,12 @@ pub(crate) struct Args {
 
     #[arg(short = 't', long, default_value = "1")]
     pub(crate) threads: u8,
+
+    #[arg(short = 'c', long, action = clap::ArgAction::SetFalse, help = "Enables HTML interpreter to find referencing links")]
+    pub(crate) crawl_html: bool,
+
+    #[arg(short = 'e', long, action = clap::ArgAction::SetTrue, help = "Allows retrieving external domains")]
+    pub(crate) crawl_external: bool,
 }
 
 pub(crate) fn setup_logging() -> Args {
