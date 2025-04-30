@@ -1,7 +1,5 @@
 use crate::storage::save_content_to_disk;
-use crate::web::{
-    parse_html_and_search_links, retrieve_content_from_web_server,
-};
+use crate::web::{parse_html_and_search_links, retrieve_content_from_web_server};
 use bytes::Bytes;
 use reqwest::blocking::{Client, Response};
 use std::str::FromStr;

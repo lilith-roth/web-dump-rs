@@ -1,7 +1,6 @@
 use lol_html::{HtmlRewriter, Settings, element};
 use reqwest::blocking::{Client, RequestBuilder, Response};
 
-
 pub(crate) fn retrieve_content_from_web_server(
     download_url: &str,
     client: &Client,
