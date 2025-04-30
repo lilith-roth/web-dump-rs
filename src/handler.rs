@@ -1,6 +1,7 @@
 use crate::storage::save_content_to_disk;
 use crate::web::{parse_html_and_search_links, retrieve_content_from_web_server};
 use bytes::Bytes;
+use console::style;
 use reqwest::blocking::{Client, Response};
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
@@ -151,7 +152,10 @@ fn download_links_from_list(
                     target_domain,
                     crawl_external_domains,
                 );
-                log::info!("HTML Parser found links: {:?}", found_links);
+                log::info!(
+                    "HTML Parser found links: {:?}",
+                    style(found_links.clone()).green()
+                );
                 for link in found_links {
                     found_new_urls_buffer.push(link);
                 }
