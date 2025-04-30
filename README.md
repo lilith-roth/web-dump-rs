@@ -48,3 +48,5 @@ Options:
 If there are any questions, missing features or problems please create a new issue here on GitHub.
 
 If you're interested in helping this project, you're very welcome to create a pull requests.
+
+Trans rights are human rights! 🏳️‍⚧️

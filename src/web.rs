@@ -32,7 +32,6 @@ pub(crate) fn parse_html_and_search_links(
                     log::warn!("<a> tag without `href` found!");
                     String::from("")
                 });
-                log::info!("Saving or no saving!");
                 if (!href.contains(base_domain) || crawl_external_domains) && !href.is_empty() {
                     links.push(href);
                 }
