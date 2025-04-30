@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.1](https://github.com/lilith-roth/web-dump-rs/compare/v0.3.0...v0.3.1) - 2025-04-30
+
+### Other
+
+- improve output ([#33](https://github.com/lilith-roth/web-dump-rs/pull/33))
+
 ## [0.1.8](https://github.com/lilith-roth/web-dump-rs/compare/v0.1.7...v0.1.8) - 2025-04-14
 
 ### Fixed
