@@ -1,19 +1,6 @@
 use lol_html::{HtmlRewriter, Settings, element};
 use reqwest::blocking::{Client, RequestBuilder, Response};
 
-pub(crate) fn is_remote_directory(web_content: &str) -> bool {
-    let mut result: bool = false;
-    // Python3's http.server
-    if web_content.contains("Directory listing") {
-        result = true;
-    }
-    // Apache & nginx
-    if web_content.contains("Index of") {
-        result = true;
-    }
-    // ToDo: Find a better way for detecting directories
-    result
-}
 
 pub(crate) fn retrieve_content_from_web_server(
     download_url: &str,
@@ -46,6 +33,7 @@ pub(crate) fn parse_html_and_search_links(
                     log::warn!("<a> tag without `href` found!");
                     String::from("")
                 });
+                log::info!("Saving or no saving!");
                 if (!href.contains(base_domain) || crawl_external_domains) && !href.is_empty() {
                     links.push(href);
                 }

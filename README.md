@@ -13,20 +13,33 @@ Simple tool to retrieve all files from a web server based on a provided wordlist
 `web-dump-rs --wordlist-path /usr/share/wordlists/wordlist.txt --target-url http://127.0.0.1`
 
 ### Usage
-# ToDo: Update when switch for crawl mode has been added
 ```
 Usage: web-dump-rs [OPTIONS] --wordlist-path <WORDLIST_PATH> --target-url <TARGET_URL>
 
 Options:
-  -v, --verbose...                           Increase logging verbosity
-  -q, --quiet...                             Decrease logging verbosity
-  -w, --wordlist-path <WORDLIST_PATH>        </usr/share/wordlists/wordlist.txt>
-  -u, --target-url <TARGET_URL>              <http://127.0.0.1/>
-  -o, --output-directory <OUTPUT_DIRECTORY>  [default: ./out/]
-  -s, --append-slash                         appends '/' to each request
-  -t, --threads <THREADS>                    [default: 1]
-  -h, --help                                 Print help
-  -V, --version                              Print version
+  -v, --verbose...
+          Increase logging verbosity
+  -q, --quiet...
+          Decrease logging verbosity
+  -w, --wordlist-path <WORDLIST_PATH>
+          </usr/share/wordlists/wordlist.txt>
+  -u, --target-url <TARGET_URL>
+          <http://127.0.0.1/>
+  -o, --output-directory <OUTPUT_DIRECTORY>
+          [default: ./out/]
+  -s, --append-slash
+          appends '/' to each request [default: false]
+  -t, --threads <THREADS>
+          [default: 1]
+  -c, --crawl-html
+          Enables HTML interpreter to find referencing links [default: true]
+  -e, --crawl-external
+          Enables HTML interpreter to also save external domains/hosts [default: false]
+  -h, --help
+          Print help
+  -V, --version
+          Print version
+
 ```
 
 
