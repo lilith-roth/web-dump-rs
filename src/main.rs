@@ -1,87 +1,58 @@
 mod args;
+mod handler;
 mod storage;
-mod utils;
 mod web;
 mod wordlist;
 
 use crate::args::{Args, setup_logging};
-use crate::storage::save_content_to_disk;
-use crate::utils::{get_output_dir, get_wordlist, prepare_output_dir};
-use crate::web::{is_remote_directory, retrieve_content_from_web_server};
+use crate::handler::create_threads_and_start_crawler;
+use crate::storage::{get_output_dir, prepare_output_dir};
+use crate::web::check_online;
 use crate::wordlist::load_wordlist;
+use std::fs::File;
+use std::io::BufReader;
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use std::thread;
-use std::thread::JoinHandle;
 
 fn main() {
     let args: Args = setup_logging();
     log::info!("Welcome to web-dump-rs!\n\n");
+    log::debug!("Startup args:\n{:?}", args);
 
     // Load wordlist
     log::info!("Wordlist in use: {}", args.wordlist_path);
-    let wordlist = get_wordlist(args.wordlist_path);
+    let wordlist: BufReader<File> = match File::open(args.wordlist_path) {
+        Ok(res) => BufReader::new(res),
+        Err(err) => panic!("Could not read wordlist!\n{:?}", err),
+    };
 
     let target_url: Arc<String> = Arc::new(args.target_url);
     log::info!("Target URL: {}", target_url);
 
-    let out_dir = get_output_dir(args.output_directory);
+    let out_dir: PathBuf = get_output_dir(args.output_directory);
     log::info!("Output directory: {:?}", out_dir);
-    let out_dir_str = Arc::new(prepare_output_dir(out_dir));
+    let out_dir_str: Arc<String> = Arc::new(prepare_output_dir(out_dir));
 
     // Load wordlist
-    let wordlists: Arc<Mutex<Vec<Vec<String>>>> = load_wordlist(wordlist, args.threads as usize);
+    // ToDo: Add switch to enable crawl only mode with no wordlist
+    let all_wordlists: Arc<Mutex<Vec<Vec<String>>>> =
+        load_wordlist(wordlist, args.threads as usize);
 
-    let mut threads: Vec<JoinHandle<()>> = vec![];
-    for i in 0..args.threads {
-        // Creating threads
-        threads.push(thread::spawn({
-            log::debug!("Thread {} spawned", i);
-            // Cloning variables into threads
-            let url = target_url.clone();
-            let directory = out_dir_str.clone();
-            let wl = wordlists
-                .lock()
-                .expect("Could not load wordlist into thread!")
-                .clone();
-
-            // Doing the magic
-            move || {
-                let client = reqwest::blocking::Client::new();
-                for word in wl[i as usize].clone() {
-                    let mut download_url: String = format!("{url}{word}");
-                    if args.append_slash {
-                        download_url = format!("{download_url}/")
-                    }
-                    log::debug!("Thread {} checking {}", i, download_url);
-
-                    // Retrieve content from web server
-                    let content_raw = retrieve_content_from_web_server(&download_url, &client);
-                    let content = match content_raw {
-                        None => continue,
-                        Some(res) => res,
-                    };
-
-                    // If the retrieved content is just a directory listing page ignore
-                    // ToDo: Add switch for storing these as well, will need some work with the directories though,
-                    //       as otherwise we will have the same filename & directory name which won't work.
-                    if let Ok(web_content_text) = std::str::from_utf8(&content) {
-                        if is_remote_directory(web_content_text) {
-                            continue;
-                        }
-                    }
-                    log::info!("Thread {} found: {}", i, download_url);
-
-                    // Save content to disk
-                    let file_path: String = format!("{directory}{word}");
-                    save_content_to_disk(content, file_path)
-                }
-            }
-        }));
+    // Check if target is online
+    let is_accessible = check_online(&target_url.clone());
+    match is_accessible {
+        Ok(_) => log::info!("Target is online! Proceeding..."),
+        Err(_) => panic!("Target not online!"),
     }
-    for active_thread in threads {
-        active_thread
-            .join()
-            .expect("Could not wait for threads to finish!");
-    }
+    create_threads_and_start_crawler(
+        args.threads,
+        target_url.clone(),
+        out_dir_str.clone(),
+        all_wordlists.clone(),
+        args.append_slash,
+        args.crawl_html,
+        args.crawl_external,
+    );
+
     log::info!("Done! Thanks for using <3");
 }

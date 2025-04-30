@@ -1,16 +1,18 @@
 [package]
 name = "web-dump-rs"
 description = "Application to retrieve all files from a web server based on a provided wordlist."
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 readme = "README.md"
 repository = "https://github.com/lilith-roth/web-dump-rs/"
 license = "MIT"
 
 [dependencies]
-clap = { version = "4.5.35", features = ["derive"] }
+clap = { version = "4.5.37", features = ["derive"] }
 clap-verbosity-flag = { version = "3.0.2", features = ["tracing", "log", "default"] }
 reqwest = { version = "0.12.15", features = ["blocking"] }
 log = "0.4.27"
 bytes = "1.10.1"
 env_logger = "0.11.8"
+lol_html = "2.3.0"
+url = "2.5.4"

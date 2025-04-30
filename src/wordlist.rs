@@ -10,10 +10,10 @@ pub(crate) fn load_wordlist(
         Arc::new(Mutex::new(vec![vec![]; amount_threads]));
     log::info!("Loading wordlist...");
     // Splits wordlist into partial wordlists for N threads
-    let mut i = 0;
+    let mut i: usize = 0;
     for line in wordlist.lines() {
-        let wl = wordlists.clone();
-        let buffer = &mut wl.lock().expect("Could not access wordlist!")[i];
+        let wl: Arc<Mutex<Vec<Vec<String>>>> = wordlists.clone();
+        let buffer: &mut Vec<String> = &mut wl.lock().expect("Could not access wordlist!")[i];
         buffer.push(line.expect("Could not read line from wordlist!"));
         i += 1;
         if i == amount_threads {
