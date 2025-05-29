@@ -5,9 +5,11 @@ pkgs.rustPlatform.buildRustPackage rec {
   cargoLock.lockFile = ./Cargo.lock;
   src = pkgs.lib.cleanSource ./.;
 
+  nativeBuildInputs = with pkgs; [
+    pkg-config
+  ];
   buildInputs = with pkgs; [
     openssl
-    openssl.dev
   ];
   PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
 }
