@@ -1,7 +1,7 @@
 { pkgs ? import <nixpkgs> { } }:
 pkgs.rustPlatform.buildRustPackage rec {
   pname = "web-dump-rs";
-  version = "v0.3.2";
+  version = "main";
   cargoLock.lockFile = ./Cargo.lock;
   src = pkgs.lib.cleanSource ./.;
 
